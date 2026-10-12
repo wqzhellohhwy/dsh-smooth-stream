@@ -44,6 +44,11 @@
 .thinkRow {
   position: relative;
   overflow: hidden;
+  /* Size container: the sweep keyframes below drive `transform` in container
+     units instead of animating `left`. `left` is a layout property, so the
+     infinite running-state sweep used to re-lay-out and repaint the row on
+     every frame; `transform` runs on the compositor instead. */
+  container-type: inline-size;
 }
 
 .think[data-state='running'] .thinkRow::after {
@@ -59,12 +64,13 @@
     transparent 100%
   );
   animation: dsh-smooth-stream-think-sweep 2.6s ease-out infinite;
+  will-change: transform;
   pointer-events: none;
 }
 
 @keyframes dsh-smooth-stream-think-sweep {
-  0% { left: -300px; }
-  90%, 100% { left: 100%; }
+  0% { transform: translateX(-300px); }
+  90%, 100% { transform: translateX(100cqw); }
 }
 
 .thinkLeading {

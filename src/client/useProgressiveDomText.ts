@@ -300,6 +300,11 @@ export function useProgressiveDomText(
         }
       }
       pending.clear()
+      // `records` is a strong Map<Text, TextRevealRecord>: leaving it populated
+      // keeps every revealed Text node (and, transitively, its ancestor element
+      // chain) alive after the view unmounts, so a session switch leaks the whole
+      // transcript subtree. Clear it with the pending queue.
+      records.clear()
       speedCpsRef.current = 35
       debugRuntime.reportStream(streamId, null)
     }

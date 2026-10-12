@@ -2851,9 +2851,14 @@ export function useConversationFollow(
         nextPort.scrollHeight - animatedH - runwayOffsetOf(nextPort),
       ) + entranceClampLagPx()
       if (remainingEntranceLag <= FOLLOW_SETTLE_EPSILON_PX) finishEntrance()
-      // Stay armed while the reply is streaming or the entrance is settling;
-      // the coordinator parks the loop once both are done.
-      return true
+      // Stay armed only while there is real work left: the reply is still
+      // streaming, an entrance is still settling, or a tall-row entrance clamp
+      // is still being revealed. This used to be an unconditional `return true`
+      // while the comment above it promised the opposite, so every mounted arm
+      // kept a live rAF chain even with nothing left to animate.
+      return activeRef.current
+        || remainingEntranceLag > FOLLOW_SETTLE_EPSILON_PX
+        || entranceClamp !== null
     }
 
     // Prime ownership and the final committed height in this layout phase.
