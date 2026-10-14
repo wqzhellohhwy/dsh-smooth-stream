@@ -239,5 +239,12 @@ export function useDecoupledMarkdown(
     return shown
   }
 
-  return throttledShown
+  // Only ever move forward. The throttled value lags the live text, and streaming
+  // text only grows, so a lagging value is always SHORTER than what is already on
+  // screen. Handing the shorter one back makes the Markdown renderer diff a
+  // shrinking-then-growing document: it cannot reuse the existing nodes, rebuilds
+  // them, and the discarded ones stay alive as detached DOM that GC cannot
+  // reclaim (measured: ~4,500 detached nodes leaked per session switch, and two
+  // forced GC passes did not move the counter). Never regress the text here.
+  return throttledShown.length >= shown.length ? throttledShown : shown
 }
